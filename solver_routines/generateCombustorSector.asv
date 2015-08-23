@@ -27,6 +27,8 @@ if unstructured
         phi             =flipud(phi);
         node_sec    =[node_sec;[R*cos(phi) R*sin(phi)]];
 %%  Helmholtzdamper are integrated
+        % set shape of Helmholtzdamper (coic bernhard)
+        
         
         
 %%        % set edges only for combustorsector
