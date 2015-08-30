@@ -51,9 +51,15 @@ if unstructured
 
         %%  Helmholtzdamper are integrated
         % set shape of Helmholtzdamper (coic bernhard)
-        r = 1.5;
-        [node_h] = helmholtzdamper(R,r, node_sec);
+        theta = 15;
+        pos = zeros(length(theta),2);
         
+        [X,Y] = pol2cart((theta*pi/180),R+dR);
+        pos = [X,Y];
+        [node_h] = helmholtzdamper(R,theta, pos);
+%         plot(node_h(:,1),node_h(:,2));
+      
+        % jetzt die richtigen nodes/edges zum einfügen finden
         face_h(:,1) = face_b(end,1)+1:1:face_b(end,1)+length(node_h);
         face_h(:,2) = face_b(end,1)+2:1:face_b(end,1)+length(node_h)+1;
         face_h(end,2)= face_h(1,1);        
