@@ -32,8 +32,10 @@ if unstructured
         face_s(:,1)     =1:length(node_sec);
         face_s(:,2)     =2:1:length(node_sec)+1;
         face_s(end,2)   =1;
-%%
-    %burner area
+
+
+    
+%% burner area
     r_b =0.05*R; % radius of burner
     theta = linspace(0,pi,2*nP);
     theta = theta.';
@@ -48,21 +50,27 @@ if unstructured
         face_b(:,1) = face_s(end,1)+1:1:face_s(end,1)+length(node_b);
         face_b(:,2) = face_s(end,1)+2:1:face_s(end,1)+length(node_b)+1;
         face_b(end,2)= face_b(1,1);
-
-        %%  Helmholtzdamper are integrated
-        % set shape of Helmholtzdamper (coic bernhard)
-        theta = 15;
-        pos = zeros(length(theta),2);
-        
-        [X,Y] = pol2cart((theta*pi/180),R+dR);
+%%  Helmholtzdamper are integrated
+        % set shape of Helmholtzdamper (cosic bernhard)
+        theta = 6;
+        g = R*10^(-3)/2;   % Skalierungsfaktor
+        pos = zeros(length(theta),2);   % initialize position of damper
+        a =(sqrt((R+dR)^2-(10.5*g)^2)); % adjusted position of the helmholtzdamper
+        [X,Y] = pol2cart((theta*0.0180/pi),a);
         pos = [X,Y];
-        [node_h] = helmholtzdamper(R,theta, pos);
+        [node_h] = helmholtzdamper(g,theta, pos);
 %         plot(node_h(:,1),node_h(:,2));
-      
-        % jetzt die richtigen nodes/edges zum einfügen finden
+
+%         %% find next face
+% [node_sec(:,2),node_sec(:,1)]=cart2pol(node_sec(:,1),node_sec(:,2));
+% node_sec(:,2) = node_sec(:,2)*pi/0.018;  
+% %%
+% [node_h(:,2),node_h(:,1)] = cart2pol(node_h(:,1),node_h(:,2));
+% node_h(:,2) = node_h(:,2)*pi/0.018;
+%%
         face_h(:,1) = face_b(end,1)+1:1:face_b(end,1)+length(node_h);
         face_h(:,2) = face_b(end,1)+2:1:face_b(end,1)+length(node_h)+1;
-        face_h(end,2)= face_h(1,1);        
+        face_h(end,2)= face_h(1,1);
      %%  
     %combine sector and burning area
     node    = [node_sec; node_b; node_h];
@@ -83,6 +91,7 @@ npoint   = length(p);
 nelement = length(e2p);
 figure(2)
  patch('vertices',[x,y],'faces',e2p,'edgecolor','green')
+ 
 %%
 IC=sqrt(inscribedcircle([x y],e2p));
 Ri=[min(IC(:,3)) max(IC(:,3))];
