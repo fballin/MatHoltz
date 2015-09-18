@@ -52,13 +52,13 @@ if unstructured
         face_b(end,2)= face_b(1,1);
 %%  Helmholtzdamper are integrated
         % set shape of Helmholtzdamper (cosic bernhard)
-        theta = 6;
+        gamma = 10;
         g = R*10^(-3)/2;   % Skalierungsfaktor
-        pos = zeros(length(theta),2);   % initialize position of damper
+        pos = zeros(length(gamma),2);   % initialize position of damper
         a =(sqrt((R+dR)^2-(10.5*g)^2)); % adjusted position of the helmholtzdamper
-        [X,Y] = pol2cart((theta*0.0180/pi),a);
+        [X,Y] = pol2cart((gamma*0.0180/pi),a);
         pos = [X,Y];
-        [node_h] = helmholtzdamper(g,theta, pos);
+        [node_h] = helmholtzdamper(g,gamma, pos);
 %         plot(node_h(:,1),node_h(:,2));
 
 %         %% find next face
@@ -66,7 +66,7 @@ if unstructured
 % node_sec(:,2) = node_sec(:,2)*pi/0.018;  
 % %%
 % [node_h(:,2),node_h(:,1)] = cart2pol(node_h(:,1),node_h(:,2));
-% node_h(:,2) = node_h(:,2)*pi/0.018;
+% node_h(:,2) = node_h(:,2)*pi/0.018
 %%
         face_h(:,1) = face_b(end,1)+1:1:face_b(end,1)+length(node_h);
         face_h(:,2) = face_b(end,1)+2:1:face_b(end,1)+length(node_h)+1;
