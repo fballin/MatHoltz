@@ -1,4 +1,4 @@
-function [ nodes_h ] = helmholtzdamper(R, alpha,r)
+function [ node_h ] = helmholtzdamper(g,theta,pos)
 %This function creates the the  shape of the damper that are used around
 %the combustor segment
 %   Detailed explanation goes here
@@ -6,32 +6,23 @@ function [ nodes_h ] = helmholtzdamper(R, alpha,r)
 %         alpha     is the angle of the position of the resonator in deg
 %         r         is the radius position of the resonator
 %%
-% hdata.hmax = 0.02;
-% R = 1;
-% alpha = 15;
-% r = 1;
+% create the resonator depending on data of cosic-bernhart
+p = g*[0,0;
+        0,10.5;
+        55.5,10.5;
+        55.5,40.5;
+        165.5,40.5;
+        165.5,0];
+    % use symmetry of the resonator
+node_h = [p; flipud(p(:,1)),flipud(-p(:,2))] ;
+node_h([1 6 7 12],:) =[];   % delete useless nodes
+%move nodes of resonator
+node_h = move(node_h, pos(1),pos(2));
+% [node_h(:,2),node_h(:,1)] = cart2pol(node_h(:,1),node_h(:,2));
+% node_h(:,2) = node_h(:,2)*pi/0.018
+% rotate resonator
+% node_h = rotate(node_h, -theta);
 
-% Die Abmaße für den Resonanzköper stammen von Cosic_bernhard
-a = 0.1*R;      % Skalierungswert abhängig von Innenradius R des Sectors
-alpha = 90-alpha;
-    nodes_h = a*[0.51,0;
-            0.51,0.555;
-            0.81,0.555;
-            0.81,1.655;
-            0,1.655;
-            0,0.555;
-            0.3,0.555;
-            0.3,0];  
-% rotate the resonator shape
-if r>R     % resonator position is on the outer radius
-    nodes_h = rotate(nodes_h,alpha);
-else 
-    nodes_h = rotate(nodes_h,alpha-180);
-end 
-%         edge(:,1)   =1:length(nodes_h);
-%         edge(:,2)     =2:1:length(nodes_h)+1;
-%         edge(end,2)   =1;
-%         [p e2p]    = mesh2d(nodes_h,edge,hdata) 
-        
+
 end
 

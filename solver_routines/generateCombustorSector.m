@@ -17,53 +17,69 @@ if unstructured
     dR=.5;  %outer radius
     N=12;   %degree of rotational symmetry
     a = 2;  %number of helmholtzdamper
-    nP=R/meshrefine
+    nP=R/meshrefine;
     nP=ceil(sqrt(nP))*12/N;
     
     phi=linspace(0,pi/N,nP);
     phi=phi.';
-    %%
+    
         % Set nodes of the combustor (sector) 
         node_sec    =[(R+dR)*cos(phi) (R+dR)*sin(phi)];
         phi             =flipud(phi);
         node_sec    =[node_sec;[R*cos(phi) R*sin(phi)]];
-%%  Helmholtzdamper are integrated
-        % set shape of Helmholtzdamper (coic bernhard)
-        r = R;
-        alpha = phi
-        [node_h] = helmholtzdamper(R,alpha,r);
-        
-        
-        
-%%        % set edges only for combustorsector
+        % wie bekomme ich jetzt nodes h noch mit hinein?
+        % set edges only for combustorsector
         face_s(:,1)     =1:length(node_sec);
         face_s(:,2)     =2:1:length(node_sec)+1;
         face_s(end,2)   =1;
-%     
-%     %burner area
-%     r_b =0.05*R; % radius of burner
-%     theta = linspace(0,pi,5*nP);
-%     theta = theta.';
-%     theta = flipud(theta);
-%         %position
-%         xpos_b =R+dR/2;
-%        
-%         %Set nodes - burner area
-%         node_b =[xpos_b+r_b*cos(theta) r_b*sin(theta)];
-%         
-%         %set edge only burning area
-%         face_b(:,1) = face_s(end,1)+1:1:face_s(end,1)+length(node_b);
-%         face_b(:,2) = face_s(end,1)+2:1:face_s(end,1)+length(node_b)+1;
-%         face_b(end,2)= face_b(1,1);
-%         
+
+
+    
+%% burner area
+    r_b =0.05*R; % radius of burner
+    theta = linspace(0,pi,2*nP);
+    theta = theta.';
+    theta = flipud(theta);
+        %position
+        xpos_b =R+dR/2;
        
+        %Set nodes - burner area
+        node_b =[xpos_b+r_b*cos(theta) r_b*sin(theta)];
+        
+        %set edge only burning area
+        face_b(:,1) = face_s(end,1)+1:1:face_s(end,1)+length(node_b);
+        face_b(:,2) = face_s(end,1)+2:1:face_s(end,1)+length(node_b)+1;
+        face_b(end,2)= face_b(1,1);
+%%  Helmholtzdamper are integrated
+        % set shape of Helmholtzdamper (cosic bernhard)
+        gamma = 10;
+        g = R*10^(-3)/2;   % Skalierungsfaktor
+        pos = zeros(length(gamma),2);   % initialize position of damper
+        a =(sqrt((R+dR)^2-(10.5*g)^2)); % adjusted position of the helmholtzdamper
+        [X,Y] = pol2cart((gamma*0.0180/pi),a);
+        pos = [X,Y];
+        [node_h] = helmholtzdamper(g,gamma, pos);
+%         plot(node_h(:,1),node_h(:,2));
+
+%         %% find next face
+% [node_sec(:,2),node_sec(:,1)]=cart2pol(node_sec(:,1),node_sec(:,2));
+% node_sec(:,2) = node_sec(:,2)*pi/0.018;  
+% %%
+% [node_h(:,2),node_h(:,1)] = cart2pol(node_h(:,1),node_h(:,2));
+% node_h(:,2) = node_h(:,2)*pi/0.018
+%%
+        face_h(:,1) = face_b(end,1)+1:1:face_b(end,1)+length(node_h);
+        face_h(:,2) = face_b(end,1)+2:1:face_b(end,1)+length(node_h)+1;
+        face_h(end,2)= face_h(1,1);
+     %%  
     %combine sector and burning area
-    node    = [node_sec; node_b];
-    edge    = [face_s; face_b];
+    node    = [node_sec; node_b; node_h];
+    edge    = [face_s; face_b; face_h];
 
     % areas
     face{1} = 1:length(edge);   % combustor
     face{2} = face_b(:,1)';     % burner
+    face{3} = face_h(:,1)';     %helmholtzdamper
 %%
 % Compute Mesh: list of node coordinates (p), list of node indices (e2p)
 options.output = true;      %output stats and figure
@@ -75,6 +91,7 @@ npoint   = length(p);
 nelement = length(e2p);
 figure(2)
  patch('vertices',[x,y],'faces',e2p,'edgecolor','green')
+ 
 %%
 IC=sqrt(inscribedcircle([x y],e2p));
 Ri=[min(IC(:,3)) max(IC(:,3))];
